@@ -71,7 +71,11 @@ sample %>% pull(mean_income) %>%
 
 ```{r prompt5, echo=FALSE}
 
-sample %>% pivot_wider()
+incomes <- train %>% group_by(treatment) %>%
+  summarize(avg_income = mean(income)) %>%
+  pivot_wider(names_from = treatment, values_from =  avg_income) %>%
+  mutate(income_dif =  Treated - Control) %>%
+select(income_dif, everything())
 
 ```
 
@@ -79,17 +83,54 @@ sample %>% pivot_wider()
 # Scene 7
 
 **Prompt:**  Calculate a 95% confidence interval for the difference between the mean income of treated and control commuters in our sample. Provide a Bayesian and Frequentist interpretation of this interval.
+```{r prompt7}
+set.seed(1)
+sample2 <- train %>%
+  rep_sample_n(size = 115, reps = 1000, replace = TRUE) %>%
+  group_by(replicate, treatment) %>% 
+  summarize(mean_income = mean(income)) %>%
+  pivot_wider(names_from = treatment, values_from = mean_income) %>%
+  mutate(diff = Treated - Control) %>%
+  pull(diff) %>%
+  quantile(c(.025, .975))
+sample2
+```
+
 
 
 # Scene 8
 
-**Prompt:**  What about the difference between att_chg of the treated and the controls? Calculate the mean difference, just as we did with income. Is this difference "large?" 
+**Prompt:**  What about the difference between att_chg of the treated and the controls? Calculate the mean difference, just as we did with income. Is this difference "large?"
+
+```{r prompt8, echo=FALSE}
+attitudes <- train %>% group_by(treatment) %>%
+  summarize(avg_att_chg = mean(att_chg)) %>%
+  pivot_wider(names_from = treatment, values_from = avg_att_chg) %>%
+  mutate(att_chg_dif = Treated - Control) %>%
+select(att_chg_dif, everything())
+attitudes
+```
+
 
 
 
 # Scene 9
 
 **Prompt:** What is the 99% confidence interval for that difference? 
+```{r prompt9, echo=FALSE}
+set.seed(1)
+sample3 <- train %>%
+  rep_sample_n(size = 115, reps = 1000, replace = TRUE) %>%
+  group_by(replicate, treatment) %>% 
+  summarize(mean_change = mean(att_chg)) %>%
+  pivot_wider(names_from = treatment, values_from = mean_income) %>%
+  mutate(diff = Treated - Control) %>%
+  pull(diff) %>%
+  quantile(c(.025, .975))
+sample2
+
+```
+
 
 
 
